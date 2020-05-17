@@ -109,9 +109,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.print(p);
     Serial.print("onMin=");
     Serial.println(onMin);
+    stat = 1;
   }else if(strstr((char *)payload, "OFF") != NULL){
     startMin = millis();
     onMin = 0;
+    stat = 0;
   }else{
     Serial.println("This is unknown command !");
   }
@@ -186,7 +188,7 @@ void setup() {
 }
 
 void loop() {
-  long leftMin;
+  float leftMin;
   long clientLoop = 0;
   long now = millis();
   int pubFlag = 0;
@@ -209,6 +211,11 @@ void loop() {
     }
   }
 
+  //When status change (0->1 or 1->0 ), publish message
+  if(lastStat != stat){
+    pubFlag = 1;
+  }
+  
   if (now - lastMsg > 30000) { // publish every 30 sec
     lastMsg = now;
     ++value;
@@ -217,8 +224,8 @@ void loop() {
 
   if(pubFlag){
     if(digitalRead(RELAY_PIN1) == HIGH){  //switch is ON
-      leftMin = (onMin - (now - startMin))/1000/60;
-      snprintf(msg, 128, "[{\"id\":\"%s\",\"value\":[\"ON 剩 %d MIN\"]}]", cht_pub_sensor_ID, leftMin);
+      leftMin = (onMin - (now - startMin))/1000.0/60.0;
+      snprintf(msg, 128, "[{\"id\":\"%s\",\"value\":[\"ON 剩 %.1f MIN\"]}]", cht_pub_sensor_ID, leftMin);
       stat = 1;
     }else{
       snprintf(msg, 128, "[{\"id\":\"%s\",\"value\":[\"OFF\"]}]", cht_pub_sensor_ID);
@@ -238,5 +245,5 @@ void loop() {
   }
   lastStat = stat;
   Serial.print("update last stat to = "); Serial.println(lastStat);
-  delay(5000);
+  delay(1000);
 }
