@@ -56,6 +56,7 @@ long startMin, onMin;
 long lastMsg = 0;
 char msg[256];
 int value = 0;
+int stat=0, lastStat=1; //1:ON, 0:OFF
 
 void setup_wifi() {
 
@@ -179,6 +180,9 @@ void setup() {
   client.setCallback(callback);
   client.setServer(mqtt_server, mqtt_port);
   //client.setCallback(callback);
+
+  stat=0;
+  lastStat=1; //1:ON, 0:OFF
 }
 
 void loop() {
@@ -186,7 +190,6 @@ void loop() {
   long clientLoop = 0;
   long now = millis();
   int pubFlag = 0;
-  int stat=0, lastStat=1; //1:ON, 0:OFF
   
   if (!client.connected()) {
     reconnect();
@@ -222,6 +225,8 @@ void loop() {
       stat = 0;
     }
 
+    Serial.println("last stat    stat");
+    Serial.print(lastStat);Serial.print("            ");Serial.println(stat);
     if( stat == 1 || lastStat != stat)
     {
       //snprintf (msg, 50, "hello world #%ld", value);
@@ -230,6 +235,8 @@ void loop() {
       client.publish(mqttPubTopic, msg);
     }
     pubFlag = 0;
-    lastStat = stat;
   }
+  lastStat = stat;
+  Serial.print("update last stat to = "); Serial.println(lastStat);
+  delay(5000);
 }
