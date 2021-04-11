@@ -30,6 +30,7 @@
 #define RELAY_PIN1   D1
 #define RELAY_PIN2   D2
 
+
 // Update these with values suitable for your network.
 const char* ssid = "your_wifi_ssid";
 const char* password = "your_wifi_password";
@@ -89,6 +90,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
   }
+  payload[length]=0;
   Serial.println();
 
   // Switch on the LED if an 1 was received as first character
@@ -103,11 +105,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   p = strstr((char *)payload, "OPEN_");
   if( p != NULL){
+    p = p + 5;
     digitalWrite(RELAY_PIN1, HIGH);
     startMin = millis();
-    onMin = atoi(p+5) * 1000 * 60;
+    onMin = atoi(p) * 1000 * 60;
     Serial.print(p);
-    Serial.print("onMin=");
+    Serial.print("Set onMin=");
     Serial.println(onMin);
     stat = 1;
   }else if(strstr((char *)payload, "OFF") != NULL){
